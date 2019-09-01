@@ -1,7 +1,11 @@
 # Backtrader
 
-參考<https://www.backtrader.com>
-回測及下單用的script. 
+參考<https://www.backtrader.com> </br>
+供回測及下單用的script. </br>
+此程式內使用策略僅為為範例檔, 請自行開發穩定策略
+
+## 程式功能
+1. 提供SQL view and procedure做回測數據的檢視
 
 ## 安裝步驟
 將sql.py放入backtrader的library, 如C:\Users\xx\AppData\Local\Programs\Python\Python36\Lib\site-packages\backtrader\feeds
@@ -16,5 +20,7 @@ KLine='5', timeframe=bt.TimeFrame.Minutes)
 ```
 5代表5分K
 0代表日K
-
 SQL部分我寫使用了自己的login, 可改寫sql.py自訂connectionstring
+
+## 執行畫面
+![image](https://github.com/hanyang0721/Backtrader/blob/master/strat.PNG)
