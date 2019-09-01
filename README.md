@@ -3,7 +3,7 @@
 參考<https://www.backtrader.com>
 回測及下單用的script. 
 
-## 步驟
+## 安裝步驟
 將sql.py放入backtrader的library, 如C:\Users\xx\AppData\Local\Programs\Python\Python36\Lib\site-packages\backtrader\feeds
 backtrader才可使用data feed from sql
 
