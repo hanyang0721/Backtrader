@@ -193,3 +193,76 @@ BEGIN
 	ORDER BY [sdate] ASC
 END
 END
+
+---------------------------------------ÀË´úµ¦²¤¥Îªºview------------------------------------------------------------------
+/****** Script for SelectTopNRows command from SSMS  ******/
+CREATE VIEW [dbo].[GetMonthlyPerformanceDetails] AS
+	WITH CTE AS
+	(
+	  SELECT StrName,coalesce (FORMAT(selltime,'yyyyMM'), 'All Time') AS [Month], 
+	  CASE WHEN TradeType=1 THEN
+				CAST(SUM(buyprice-sellprice) AS numeric(8,2))
+		   ELSE	
+				CAST(SUM(sellprice-buyprice) AS numeric(8,2)) END  AS SumProfit, 
+	  count(*) AS NumTrades, 
+	  CASE WHEN TradeType=1 THEN
+				CAST(SUM(buyprice-sellprice)/count(*) AS numeric(8,2)) 
+		   ELSE
+				CAST(SUM(sellprice-buyprice)/count(*) AS numeric(8,2)) END AS AvgProfit, TradeType
+		
+		
+		,SUM(CASE WHEN TradeType=1 and buyprice-sellprice>0 THEN 1 END) AS ShortWins
+		,SUM(CASE WHEN TradeType=0 and sellprice-buyprice>0 THEN 1 END) AS LongWins
+	  FROM [Stock].[dbo].[StrategyPerformanceHis]
+	  GROUP BY StrName, rollup( FORMAT(selltime,'yyyyMM')), TradeType
+	
+	),
+
+	WORST_SumProfit AS
+	(
+		SELECT S.* FROM CTE S INNER JOIN (
+		SELECT MIN(SumProfit) AS MinSumProfit  FROM CTE) X ON S.SumProfit=X.MinSumProfit
+	),
+	WORST_AvgProfit AS
+	(
+		SELECT S.* FROM CTE S INNER JOIN (
+		SELECT MIN(AvgProfit) AS MinAvgProfit  FROM CTE) X ON S.AvgProfit=X.MinAvgProfit
+	)
+
+	SELECT StrName, [Month],'Normal' AS Type ,SumProfit, NumTrades, 
+			CAST(AvgProfit as numeric(8,2)) AS AvgProfit,TradeType,ISNULL(ShortWins,0) AS ShortWins, ISNULl(CAST(CAST(ShortWins as float)/NumTrades as numeric(5,2)),0) AS ShortWinRate, 
+			ISNULL(LongWins,0) AS LongWins, ISNULL(CAST(CAST(LongWins as float)/NumTrades as numeric(5,2)),0) AS LongWinRate FROM CTE
+	UNION ALL
+	SELECT StrName, [Month],'Worst Sum',  SumProfit, NumTrades, CAST(AvgProfit as numeric(8,2)),TradeType,ShortWins,ShortWins/NumTrades,
+			LongWins, CAST(CAST(LongWins as float)/NumTrades as numeric(5,2)) AS LongWinRate FROM WORST_SumProfit
+	UNION ALL
+	SELECT StrName, [Month],'Worst Avg', SumProfit, NumTrades, CAST(AvgProfit as numeric(8,2)),TradeType,ShortWins,ShortWins/NumTrades,
+			LongWins, CAST(CAST(LongWins as float)/NumTrades as numeric(5,2)) AS LongWinRate FROM WORST_AvgProfit
+	UNION ALL
+	SELECT StrName, LEFT([Month],4) AS [YEAR],'Yearly' AS Type , SUM(SumProfit),SUM(NumTrades) , CAST(SUM(SumProfit)/SUM(NumTrades) as numeric(8,2)),TradeType,
+			SUM(ShortWins),CAST(CAST(SUM(ShortWins) as float)/SUM(NumTrades) AS numeric(8,2)) AS ShortWinRate, SUM(LongWins), CAST(CAST(SUM(LongWins) as float)/SUM(NumTrades) AS numeric(8,2)) AS LongWinRate FROM CTE
+	GROUP BY StrName, LEFT([Month],4), TradeType
+	
+GO
+
+
+---------------------------------------ÀË´úµ¦²¤¥Îªºview-------------------------------------------------------------------------------
+CREATE VIEW [dbo].[GetMonthlyPerformanceSum] AS
+  SELECT  [StrName]
+      ,[Month]
+      ,[Type]
+      ,SUM([SumProfit]) [SumProfit]
+      ,SUM([NumTrades]) [NumTrades]
+      ,CAST(SUM([SumProfit])/SUM([NumTrades]) as numeric(8,2)) [AvgProfit]
+  FROM [Stock].[dbo].[GetMonthlyPerformanceDetails]
+  WHERE Type IN ('All Time','Normal', 'Yearly')
+  GROUP BY [StrName], [Month] ,[Type]
+  
+
+
+
+
+
+
+
+
