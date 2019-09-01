@@ -35,8 +35,9 @@ backtrader才可使用data feed from sql
 ![image](https://github.com/hanyang0721/Backtrader/blob/master/strat.PNG)
 
 ## 策略數據檢驗
+程式內我設定了tradetype 0 為做多, 1為做空
 ```sql
 SELECT * FROM [Stock].[dbo].[GetMonthlyPerformanceDetails] 
-SELECT *  FROM [Stock].[dbo].[GetMonthlyPerformanceSum]
+SELECT * FROM [Stock].[dbo].[GetMonthlyPerformanceSum]
 ```
 ![image](https://github.com/hanyang0721/Backtrader/blob/master/backtrader.PNG)
