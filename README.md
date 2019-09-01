@@ -9,7 +9,7 @@
 1. StrategyPerformanceHis表格為回測用, 
 
 ## 安裝步驟
-1. <b>設定python環境</b>
+1. **設定python環境**  
 將sql.py放入backtrader的library, 如C:\Users\xx\AppData\Local\Programs\Python\Python36\Lib\site-packages\backtrader\feeds
 backtrader才可使用data feed from sql
 
@@ -24,7 +24,7 @@ KLine='5', timeframe=bt.TimeFrame.Minutes)
 0代表日K
 SQL部分我寫使用了自己的login, 可改寫sql.py自訂connectionstring
 
-2. <b>設定SQL環境</b>
+2. **設定SQL環境**  
 將Query.sql裡的schema, table, procedure等等全部倒到對應的路徑
 
 ## 執行畫面
