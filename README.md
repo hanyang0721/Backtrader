@@ -23,12 +23,13 @@ backtrader才可使用data feed from sql
 ```
   5代表5分K
   0代表日K
-  SQL部分我寫使用了自己的login, 可改寫sql.py自訂connectionstring
+  SQL部分我使用了自己的login, 可改寫sql.py自訂connectionstring
 
 2. **設定SQL環境**  
-將Query.sql裡的schema, table, procedure等等全部倒到對應的路徑
+將這個資料庫還原: https://github.com/hanyang0721/Stock-Database
+使用bak還原, 或是script還原
 
-3. **下載報價**
+3. **(Optional)下載報價**
 請用SKQuote下載資料分k,日k
 
 ## 執行畫面
