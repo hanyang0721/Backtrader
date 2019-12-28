@@ -34,6 +34,7 @@ backtrader才可使用data feed from sql
 
 ## 執行畫面
 ![image](https://github.com/hanyang0721/Backtrader/blob/master/strat.PNG)
+<br>
 ![image](https://github.com/hanyang0721/Backtrader/blob/master/plot.png)
 
 ## 策略數據檢驗
