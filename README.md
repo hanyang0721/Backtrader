@@ -34,7 +34,7 @@ backtrader才可使用data feed from sql
 
 ## 執行畫面
 ![image](https://github.com/hanyang0721/Backtrader/blob/master/strat.PNG)
-![image](https://github.com/hanyang0721/Backtrader/blob/master/plot.PNG)
+![image](https://github.com/hanyang0721/Backtrader/blob/master/plot.png)
 
 ## 策略數據檢驗
 程式內我設定了tradetype 0 為做多, 1為做空
