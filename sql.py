@@ -17,7 +17,8 @@ class MySQLData(DataBase):
         ('fromdate', None),
         ('todate', None),
         ('stockID', None),
-        ('KLine', None))
+        ('KLine', None),
+        ('Session', None))
         #0 stands for daily based
         #5 stands for 5 minute based
     def __init__(self):
@@ -28,14 +29,14 @@ class MySQLData(DataBase):
 
     def start(self):
         self.conn = pyodbc.connect('DRIVER=' + self.driver + ';PORT=1433;SERVER=' + self.params.__dict__['server']
-                                   + ';PORT=1443;DATABASE=Stock;' + 'UID='+ self.params.__dict__['username'] + ';PWD='+ self.params.__dict__['password'] )
+                                   + ';PORT=1443;DATABASE=Stock;' + 'Trusted_Connection=yes' )
 
         if self.params.KLine == '0':
-            SQLQuery = "EXEC [dbo].sp_GetTicksDaily  '%s', '%s','%s' " % (self.params.fromdate, self.params.todate, self.stockID)
+            SQLQuery = "EXEC [dbo].[sp_GetTicksDaily]  '%s', '%s','%s',%s " % (self.params.fromdate, self.params.todate, self.stockID, self.params.Session)
         elif self.params.KLine == '5':
-            SQLQuery = """EXEC [dbo].[sp_GetTicksIn5Min]  '%s', '%s','%s'  """ % (self.params.fromdate, self.params.todate, self.stockID )
+            SQLQuery = "EXEC [dbo].[sp_GetTicksIn5Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.stockID, self.params.Session)
         elif self.params.KLine == '60':
-            SQLQuery = """EXEC [dbo].[sp_GetTickInHour]  '%s', '%s','%s'  """ % (self.params.fromdate, self.params.todate, self.stockID )
+            SQLQuery = "EXEC [dbo].[sp_GetTickInHour]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.stockID, self.params.Session )
 
         print(SQLQuery)
         self.result = self.conn.execute(SQLQuery)

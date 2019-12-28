@@ -1,22 +1,17 @@
-
-
 import backtrader as bt
 import datetime as dt
 import argparse
 import DBconnect
+import Const
 
-sum_profit = 0
-total_trades = 0
 database = None
-buyprice = 0
-buytime = 0
-trade_type = 0 # 0 is short, 1 is long
-isplacedbet = False
-NumberOfWins = 0
-NumberOfLoss = 0
+trade_type = 0  # 0 is short, 1 is long
+NumberOfWins, NumberOfLoss, buytime, buyprice, total_trades, sum_profit = (0,)*6
+PlaceOrdersAmt = 1
+StockNo = 'MTX00'
 
 
-class testStrategy(bt.Strategy):
+class TheStrategy(bt.Strategy):
     params = (
         # Standard MACD Parameters
         ('macd1', 5),
@@ -41,7 +36,7 @@ class testStrategy(bt.Strategy):
         self.sma_vol20 = bt.ind.SMA(self.data.volume, period=20)
         self.sma_vol10 = bt.ind.SMA(self.data.volume, period=10)
 
-        #self.data1.plotinfo.plot = False
+        self.data1.plotinfo.plot = True
     def notify_trade(self, trade):
         global sum_profit, total_trades, NumberOfWins, NumberOfLoss
         if not trade.isclosed:
@@ -58,7 +53,8 @@ class testStrategy(bt.Strategy):
             self.pnl = trade.pnl
         else:
             self.pnl = -trade.pnl
-        database.InsertPerfLog('TheStraAlpha', bt.num2date(trade.dtopen), bt.num2date(trade.dtclose), trade.price, trade.price + self.pnl, int(not trade.long)) #because True is 1, we need convert it to 0 which represent buy
+        # because True is 1, we need convert it to 0 which represent buy
+        database.InsertPerfLog('TheStraAlpha', bt.num2date(trade.dtopen), bt.num2date(trade.dtclose), trade.price, trade.price + self.pnl, int(not trade.long))
 
     def notify_order(self, order):
         global buyprice, buytime
@@ -86,24 +82,25 @@ class testStrategy(bt.Strategy):
         global total_trades, trade_type, buyprice, buytime
         settlement_day = False
 
-        if self.data.datetime.datetime().weekday() == 2 and self.data.datetime.datetime().day >= 15 and self.data.datetime.datetime().day <= 21:
+        if (self.data.datetime.datetime().weekday() == 2 and 15 <= self.data.datetime.datetime().day <= 21) or \
+                (self.data.datetime.datetime().weekday() == 3 and 15 <= self.data.datetime.datetime().day <= 22):
             settlement_day = True
 
         if not self.position:
-            if self.macd.signal[0] <0 and self.macd[0]<0.0:
+            if self.macd.signal[0] < 0 and self.macd[0] >= 0.0:
                 pdist = self.atr[0] * self.p.atrdist
                 buyprice = self.data.close[0]
                 self.pstop = self.data.close[0] - pdist
                 trade_type = 1
                 self.sell(data=self.datas[0])
-                database.InsertOrder('MTX00', self.data.datetime.datetime(), 1, 1, buyprice)
-            if self.macd.signal[0] >=0 and self.macd[0]>=0:
+                database.InsertOrder(StockNo, self.data.datetime.datetime(), 1, PlaceOrdersAmt, buyprice, buyprice-2,  Const.NoDayTrade, Const.TradeTypeROD)
+            if self.macd.signal[0] >= 0 and self.macd[0] < 0:
                 pdist = self.atr[0] * self.p.atrdist
                 buyprice = self.data.close[0]
                 self.pstop = self.data.close[0] - pdist
                 trade_type = 0
                 self.buy(data=self.datas[0])
-                database.InsertOrder('MTX00', self.data.datetime.datetime(), 0, 1, buyprice)
+                database.InsertOrder(StockNo, self.data.datetime.datetime(), 0, PlaceOrdersAmt, buyprice, buyprice+2, Const.NoDayTrade, Const.TradeTypeROD)
         elif self.position:
             pclose = self.data.close[0]
             pstop = self.pstop
@@ -122,9 +119,11 @@ class testStrategy(bt.Strategy):
                 self.pstop = max(pstop, pclose - pdist)
 
             if tradeclose == 1 and trade_type == 0:
-                database.InsertOrder('MTX00', self.data.datetime.datetime(), 1, 1, pclose)
+                database.InsertOrder(StockNo, self.data.datetime.datetime(), 1, PlaceOrdersAmt, pclose, pclose + 2, Const.NoDayTrade, Const.TradeTypeROD)
             if tradeclose == 1 and trade_type == 1:
-                database.InsertOrder('MTX00', self.data.datetime.datetime(), 0, 1, pclose)
+                database.InsertOrder(StockNo, self.data.datetime.datetime(), 0, PlaceOrdersAmt, pclose, pclose - 2, Const.NoDayTrade, Const.TradeTypeROD)
+
+
 def runstrat(args=None):
         global sum_profit, total_trades, database, NumberOfWins, NumberOfLoss
 
@@ -132,6 +131,7 @@ def runstrat(args=None):
         database = DBconnect.DBconnect('localhost', 'trader', 'trader')
         database.Connect()
 
+        database.InsertExecLog('3.1  Backtrader Starting')
         database.ClearPerfLog()
 
         args = parse_args(args)
@@ -143,14 +143,14 @@ def runstrat(args=None):
         fromdate = dt.datetime(2019, 7, 15)
         todate = dt.datetime(2019, 12, 31)
 
-        data0 = bt.feeds.MySQLData(fromdate=fromdate, todate=todate, server='localhost', username='trader', password='trader', stockID='TX00', KLine='5', timeframe=bt.TimeFrame.Minutes)
-        data1 = bt.feeds.MySQLData(fromdate=fromdate, todate=todate, server='localhost', username='trader', password='trader', stockID='TX00', KLine='0', timeframe=bt.TimeFrame.Minutes)
+        data0 = bt.feeds.MySQLData(fromdate=fromdate, todate=todate, server='localhost', username='trader', password='trader', stockID='TX00', KLine='5', Session=1, timeframe=bt.TimeFrame.Minutes)
+        data1 = bt.feeds.MySQLData(fromdate=fromdate, todate=todate, server='localhost', username='trader', password='trader', stockID='TX00', KLine='0', Session=1, timeframe=bt.TimeFrame.Days)
 
         cerebro.adddata(data0)
         cerebro.adddata(data1)
 
         # args for the strategy, period is a MUST why??
-        cerebro.addstrategy(testStrategy, onlydaily=args.onlydaily, )
+        cerebro.addstrategy(TheStrategy, onlydaily=args.onlydaily, )
 
         #cerebro.addstrategy(testStrategy,)
         cerebro.run()
@@ -163,7 +163,7 @@ def runstrat(args=None):
         print('Total wins %i ' % NumberOfWins)
         print('Total loss %i' % NumberOfLoss)
         print('Winning Percentage %.2f' % (NumberOfWins/total_trades*100))
-        #cerebro.plot()
+        cerebro.plot()
 
 def parse_args(pargs=None):
         parser = argparse.ArgumentParser(
