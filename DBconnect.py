@@ -1,9 +1,10 @@
+# coding=utf-8
 import pyodbc
 
 
 class DBconnect:
     def __init__(self, addr, username, password):
-        self.Server = { "server": addr, "username": username, 'password': password}
+        self.Server = {"server": addr, "username": username, 'password': password}
         self.conn = None
         self.driver = '{SQL Server Native Client 11.0}'
         self.database = None
@@ -26,6 +27,13 @@ class DBconnect:
         cursor.execute(SQL, param_values)
         cursor.commit()
 
+    def ChkOrderMatched(self):
+        cursor = self.conn.cursor()
+        SQL = "EXEC dbo.sp_GetNotifyOrders"
+        cursor.execute(SQL)
+        logList = cursor.fetchall()
+        return logList
+
     def InsertExecLog(self, message):
         cursor = self.conn.cursor()
         SQL = " INSERT INTO dbo.[ATM_DailyLog] (ExecTime,Steps) values (GETDATE() ,'{message}' ) "
@@ -47,7 +55,7 @@ class DBconnect:
 
     def InsertOrder(self, stockNo , SignalTime, BuyOrSell, Size, Price, DealPrice, DayTrade, TradeType):
         cursor = self.conn.cursor()
-        SQL = """ IF NOT EXISTS (SELECT 1 FROM Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' )　
+        SQL = """ IF NOT EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' )　
                                  BEGIN INSERT INTO dbo.Orders ([stockNo],[SignalTime],[BuyOrSell],[Size], [Price], 
                                  [DealPrice], [DayTrade], [TradeType]) 
                   values ('{stockNo}', '{SignalTime}', '{BuyOrSell}', '{Size}', '{Price}','{DealPrice}','{DayTrade}','{TradeType}') END """
@@ -58,6 +66,19 @@ class DBconnect:
         #SQL = SQL.format(OrderSN=OrderSN, ErrorLog=ErrorLog)
         cursor.execute(SQL)
         cursor.commit()
+
+    def CheckMatchedOrder(self, stockNo, SignalTime, BuyOrSell, AnalysisMode):
+        cursor = self.conn.cursor()
+        SQL = """ IF EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' AND stockNo='{stockNo}' ) 
+                     OR 0='{AnalysisMode}' OR '{SignalTime}' >= DATEADD(hour, -1, GETDATE())
+                    SELECT 0　
+                  ELSE 
+                    SELECT 1"""
+        SQL = SQL.format(stockNo=stockNo, SignalTime=SignalTime, BuyOrSell=BuyOrSell, AnalysisMode=AnalysisMode)
+
+        cursor.execute(SQL)
+        matched = cursor.fetchall()
+        return matched[0][0]
 
     def GetNotifyOrders(self):
         cursor = self.conn.cursor()
