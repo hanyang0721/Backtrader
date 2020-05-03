@@ -3,28 +3,45 @@ import pyodbc
 
 
 class DBconnect:
-    def __init__(self, addr, username, password):
-        self.Server = {"server": addr, "username": username, 'password': password}
+    def __init__(self, addr, database, username, password):
+        self.Server = {"server": addr, "database": database, "username": username, 'password': password}
         self.conn = None
         self.driver = '{SQL Server Native Client 11.0}'
-        self.database = None
-        self.Query = ''
-        self.database = ''
-
-    def SetDatabase(self, database):
-        self.Server['name'] = database
-        self.database = database
 
     def Connect(self):
-        self.conn = pyodbc.connect('DRIVER=' + self.driver + ';PORT=1433;SERVER=' + self.Server['server']
-                                   + ';PORT=1443;DATABASE=Stock;' + 'Trusted_Connection=yes')
+        self.conn = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.Server['server'] + ';DATABASE=' + self.Server['database'] + ';UID=' + self.Server['username'] + ';PWD=' + self.Server['password'])
 
     def InsertPerfLog(self, straname, buytime, selltime, buyprice, sellprice, trade_type):
         cursor = self.conn.cursor()
         SQL = " INSERT INTO dbo.StrategyPerformanceHis ([StrName],[buytime],[selltime],[buyprice],[sellprice], [TradeType]) values (? , ?, ?, ?, ?, ?) "
         param_values = [straname, buytime, selltime, buyprice, sellprice, trade_type]
-        #SQL = SQL.format(OrderSN=OrderSN, ErrorLog=ErrorLog)
+        # SQL = SQL.format(OrderSN=OrderSN, ErrorLog=ErrorLog)
         cursor.execute(SQL, param_values)
+        cursor.commit()
+
+    def InsertOptimizeLog(self, StratName, Datefrom, Dateto, SumOfProfit, NumerOfTrades, ProfitPertrades, TotalWins, TotalLoss, WinningPct,
+                          Para1=0, value1=0, Para2=0, value2=0, Para3=0, value3=0, Para4=0, value4=0, Para5=0, value5=0, Para6=0, value6=0, Para7=0, value7=0, Para8=0,
+                          value8=0, Para9=0, value9=0, Para10=0, value10=0):
+        cursor = self.conn.cursor()
+        SQL = " INSERT INTO dbo.StrategyOpitimizeResult values (? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        param_values = [StratName, Datefrom, Dateto, SumOfProfit, NumerOfTrades, ProfitPertrades, TotalWins, TotalLoss, WinningPct,
+                        Para1, value1, Para2, value2, Para3, value3, Para4, value4, Para5, value5, Para6, value6, Para7, value7, Para8, value8, Para9, value9, Para10, value10]
+        # SQL = SQL.format(OrderSN=OrderSN, ErrorLog=ErrorLog)
+        cursor.execute(SQL, param_values)
+        cursor.commit()
+
+    def InsertBacktestLog(self, message):
+        cursor = self.conn.cursor()
+        SQL = " INSERT INTO dbo.Backtestlog values (?) "
+        param_values = [message]
+        # SQL = SQL.format(OrderSN=OrderSN, ErrorLog=ErrorLog)
+        cursor.execute(SQL, param_values)
+        cursor.commit()
+
+    def ClearBacktestLog(self):
+        cursor = self.conn.cursor()
+        SQL = " DELETE dbo.BacktestLog "
+        cursor.execute(SQL)
         cursor.commit()
 
     def ChkOrderMatched(self):
@@ -53,29 +70,28 @@ class DBconnect:
         cursor.execute(SQL)
         cursor.commit()
 
-    def InsertOrder(self, stockNo , SignalTime, BuyOrSell, Size, Price, DealPrice, DayTrade, TradeType):
+    def InsertOrder(self, StratName, stockNo, SignalTime, BuyOrSell, Size, Price, DealPrice, DayTrade, TradeType, Stratcode):
         cursor = self.conn.cursor()
-        SQL = """ IF NOT EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' )　
-                                 BEGIN INSERT INTO dbo.Orders ([stockNo],[SignalTime],[BuyOrSell],[Size], [Price], 
-                                 [DealPrice], [DayTrade], [TradeType]) 
-                  values ('{stockNo}', '{SignalTime}', '{BuyOrSell}', '{Size}', '{Price}','{DealPrice}','{DayTrade}','{TradeType}') END """
-        SQL = SQL.format(stockNo=stockNo, SignalTime=SignalTime, BuyOrSell=BuyOrSell, Size=Size, Price=Price,
-                         DealPrice=DealPrice, DayTrade=DayTrade, TradeType=TradeType)
+        SQL = """ IF NOT EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' AND StratCode='{Stratcode}' )　
+                                 BEGIN INSERT INTO dbo.Orders ([StrategyName], [stockNo],[SignalTime],[BuyOrSell],[Size], [Price], 
+                                 [DealPrice], [DayTrade], [TradeType], [Stratcode]) 
+                  values ('{StratName}', '{stockNo}', '{SignalTime}', '{BuyOrSell}', '{Size}', '{Price}','{DealPrice}','{DayTrade}','{TradeType}', '{Stratcode}') END """
+        SQL = SQL.format(StratName=StratName, stockNo=stockNo, SignalTime=SignalTime, BuyOrSell=BuyOrSell, Size=Size, Price=Price,
+                         DealPrice=DealPrice, DayTrade=DayTrade, TradeType=TradeType, Stratcode=Stratcode)
 
-        #param_values = [stockNo, SignalTime, BuyOrSell, Size, Price]
-        #SQL = SQL.format(OrderSN=OrderSN, ErrorLog=ErrorLog)
+        # param_values = [stockNo, SignalTime, BuyOrSell, Size, Price]
+        # SQL = SQL.format(OrderSN=OrderSN, ErrorLog=ErrorLog)
         cursor.execute(SQL)
         cursor.commit()
 
-    def CheckMatchedOrder(self, stockNo, SignalTime, BuyOrSell, AnalysisMode):
+    def CheckMatchedOrder(self, stockNo, SignalTime, BuyOrSell, RunningMode):
         cursor = self.conn.cursor()
         SQL = """ IF EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' AND stockNo='{stockNo}' ) 
-                     OR 0='{AnalysisMode}' OR '{SignalTime}' >= DATEADD(hour, -1, GETDATE())
-                    SELECT 0　
+                     OR 0='{RunningMode}' OR '{SignalTime}' >= DATEADD(minute, -10, GETDATE())
+                    SELECT 1　
                   ELSE 
-                    SELECT 1"""
-        SQL = SQL.format(stockNo=stockNo, SignalTime=SignalTime, BuyOrSell=BuyOrSell, AnalysisMode=AnalysisMode)
-
+                    SELECT 0"""
+        SQL = SQL.format(stockNo=stockNo, SignalTime=SignalTime, BuyOrSell=BuyOrSell, RunningMode=RunningMode)
         cursor.execute(SQL)
         matched = cursor.fetchall()
         return matched[0][0]
@@ -93,3 +109,11 @@ class DBconnect:
         SQL = SQL.format(orderid=orderid)
         cursor.execute(SQL)
         cursor.commit()
+
+    def GetTXSettlementDay(self, Session, SignalTime):
+        cursor = self.conn.cursor()
+        SQL = """ EXEC dbo.sp_GetTXSettlementDay @session='{Session}', @signaltime='{SignalTime}'"""
+        SQL = SQL.format(SignalTime=SignalTime, Session=Session)
+        cursor.execute(SQL)
+        matched = cursor.fetchall()
+        return matched[0][0]
