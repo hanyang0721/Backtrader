@@ -51,7 +51,7 @@ tradetype 0 為做多, 1為做空<br>
 sessionend 收盤時間, use with caution.<br> 
 
 ## 策略數據檢驗
-執行sp後使用https://github.com/hanyang0721/Stock-Database 裡的analysis.sql
+執行sp後使用https://github.com/hanyang0721/Stock-Database 裡的CashMining.sql
 做分析
 ```sql
 EXEC dbo.sp_GetActualOrderPerformance
