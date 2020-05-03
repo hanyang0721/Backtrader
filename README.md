@@ -48,6 +48,7 @@ RunningMode (AnalysisMode, ExecutionMode) ExecutionMode為盤中使用, 回測�
 settlement_day 結算日
 stratcode 目前定義10000~10009為long open, 10010以上為short open, 其餘為exit code, 可自行定義opencode, exitcode做策略的analysis
 tradetype 0 為做多, 1為做空
+sessionend 收盤時間, use with caution. 
 
 ## 策略數據檢驗
 執行sp後使用https://github.com/hanyang0721/Stock-Database裡的analysis.sql
