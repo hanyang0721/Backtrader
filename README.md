@@ -38,9 +38,8 @@ backtrader才可使用data feed from sql
 ![image](https://github.com/hanyang0721/Backtrader/blob/master/plot.png)
 
 ## 線上執行績效
-3口小台, 僅交易早盤
-<img sr="https://github.com/hanyang0721/image/blob/master/IMG_4177.PNG" width="350" height="450">
-
+3口小台, 僅交易早盤<br>
+![image](https://github.com/hanyang0721/image/blob/master/IMG_4177.PNG)
 
 ## 策略數據檢驗
 程式內我設定了tradetype 0 為做多, 1為做空
