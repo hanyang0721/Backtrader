@@ -33,7 +33,7 @@ backtrader才可使用data feed from sql
 請用SKQuote下載資料分k,日k
 
 ## 執行畫面
-![image](https://github.com/hanyang0721/image/blob/master/strat.PNG)
+![image](https://github.com/hanyang0721/image/blob/master/strat.png)
 <br>
 ![image](https://github.com/hanyang0721/image/blob/master/plot.png)
 
@@ -42,7 +42,7 @@ backtrader才可使用data feed from sql
 ![image](https://github.com/hanyang0721/image/blob/master/IMG_4177.PNG)
 
 ## 策略數據檢驗
-程式內我設定了tradetype 0 為做多, 1為做空
+程式內參數tradetype 0 為做多, 1為做空
 ```sql
 SELECT * FROM [Stock].[dbo].[GetMonthlyPerformanceDetails] 
 SELECT * FROM [Stock].[dbo].[GetMonthlyPerformanceSum]
