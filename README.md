@@ -35,7 +35,7 @@ backtrader才可使用data feed from sql
 ## 執行畫面
 ![image](https://github.com/hanyang0721/image/blob/master/strat.PNG)
 <br>
-![image](https://github.com/hanyang0721/Backtrader/blob/master/plot.png)
+![image](https://github.com/hanyang0721/image/blob/master/plot.png)
 
 ## 線上執行績效
 3口小台, 僅交易早盤<br>
