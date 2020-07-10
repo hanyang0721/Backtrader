@@ -42,13 +42,13 @@ backtrader才可使用data feed from sql
 ![image](https://github.com/hanyang0721/image/blob/master/IMG_4177.PNG)
 
 ## 程式參數說明
-PlaceOrdersAmt 下單口數<br>
+shortposzie, longposSize 多空下單口數<br>
 StockNo 下單標的<br>
 RunningMode (AnalysisMode, ExecutionMode) ExecutionMode為盤中使用, 回測及優化策略時使用AnalysisMode<br>
 settlement_day 結算日<br>
 stratcode 目前定義10000~10009為long open, 10010以上為short open, 其餘為exit code, 可自行定義opencode, exitcode做策略的analysis<br>
 tradetype 0 為做多, 1為做空<br>
-sessionend 收盤時間, use with caution.<br> 
+sessionend 收盤時間, use with caution. 早盤為00:00 夜盤為05:00<br> 
 
 ## 策略數據檢驗
 執行sp後使用https://github.com/hanyang0721/Stock-Database 裡的CashMining.sql
