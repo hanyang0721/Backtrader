@@ -53,7 +53,7 @@ class DBconnect:
 
     def InsertExecLog(self, message):
         cursor = self.conn.cursor()
-        SQL = " INSERT INTO dbo.[ATM_DailyLog] (ExecTime,Steps) values (GETDATE() ,'{message}' ) "
+        SQL = " INSERT INTO dbo.[ATM_DailyLog] (ExecTime, Service, MsgType ,Message) values (GETDATE() , 'PyStartegy', 'INFO' ,'{message}' ) "
         SQL = SQL.format(message=message)
         cursor.execute(SQL)
         cursor.commit()
@@ -84,10 +84,15 @@ class DBconnect:
         cursor.execute(SQL)
         cursor.commit()
 
+    # 1 -> matched order happen on either of the following conditions.
+    #    Order is found in the order table
+    #    Running Mode is Analysis(0), or
+    #    ExecutionMode (1) and Signal time is less than 300 minutes, use 300 minutes because it could still notify us when order comes late in same day market time
+    #    Late order reason can be no tick, program issue
     def CheckMatchedOrder(self, stockNo, SignalTime, BuyOrSell, RunningMode):
         cursor = self.conn.cursor()
         SQL = """ IF EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' AND stockNo='{stockNo}' ) 
-                     OR 0='{RunningMode}' OR '{SignalTime}' >= DATEADD(minute, -10, GETDATE())
+                     OR 0='{RunningMode}' OR '{SignalTime}' >= DATEADD(minute, -300, GETDATE())
                     SELECT 1　
                   ELSE 
                     SELECT 0"""
@@ -110,10 +115,10 @@ class DBconnect:
         cursor.execute(SQL)
         cursor.commit()
 
-    def GetTXSettlementDay(self, Session, SignalTime):
+    def GetTXSettlementDay(self, Session, SignalTime, functioncode):
         cursor = self.conn.cursor()
-        SQL = """ EXEC dbo.sp_GetTXSettlementDay @session='{Session}', @signaltime='{SignalTime}'"""
-        SQL = SQL.format(SignalTime=SignalTime, Session=Session)
+        SQL = """ EXEC dbo.sp_GetTXSettlementDay @session='{Session}', @signaltime='{SignalTime}', @functioncode='{functioncode}' """
+        SQL = SQL.format(SignalTime=SignalTime, Session=Session, functioncode=functioncode)
         cursor.execute(SQL)
         matched = cursor.fetchall()
         return matched[0][0]

@@ -34,8 +34,12 @@ class MySQLData(DataBase):
             SQLQuery = "EXEC [dbo].[sp_GetTicksDaily]  '%s', '%s','%s',%s " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
         elif self.params.KLine == '5':
             SQLQuery = "EXEC [dbo].[sp_GetTicksIn5Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
+        elif self.params.KLine == '15':
+            SQLQuery = "EXEC [dbo].[sp_GetTicksIn15Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
+        elif self.params.KLine == '30':
+            SQLQuery = "EXEC [dbo].[sp_GetTicksIn30Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
         elif self.params.KLine == '60':
-            SQLQuery = "EXEC [dbo].[sp_GetTickInHour]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session )
+            SQLQuery = "EXEC [dbo].[sp_GetTicksIn60Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
         print(SQLQuery)
         self.result = self.conn.execute(SQLQuery)
 
