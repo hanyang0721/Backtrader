@@ -40,6 +40,8 @@ class MySQLData(DataBase):
             SQLQuery = "EXEC [dbo].[sp_GetTicksIn30Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
         elif self.params.KLine == '60':
             SQLQuery = "EXEC [dbo].[sp_GetTicksIn60Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
+        elif self.params.KLine == '1':
+            SQLQuery = "EXEC [dbo].[sp_GetTicksIn1Min]  '%s', '%s','%s', %s  " % (self.params.fromdate, self.params.todate, self.params.stockID, self.params.Session)
         print(SQLQuery)
         self.result = self.conn.execute(SQLQuery)
 

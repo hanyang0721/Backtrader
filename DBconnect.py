@@ -72,7 +72,7 @@ class DBconnect:
 
     def InsertOrder(self, StratName, stockNo, SignalTime, BuyOrSell, Size, Price, DealPrice, DayTrade, TradeType, Stratcode):
         cursor = self.conn.cursor()
-        SQL = """ IF NOT EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' AND StratCode='{Stratcode}' )　
+        SQL = """ IF NOT EXISTS (SELECT 1 FROM dbo.Orders WHERE SignalTime='{SignalTime}' AND BuyOrSell='{BuyOrSell}' AND StratCode='{Stratcode}' AND StrategyName='{StratName}' )　
                                  BEGIN INSERT INTO dbo.Orders ([StrategyName], [stockNo],[SignalTime],[BuyOrSell],[Size], [Price], 
                                  [DealPrice], [DayTrade], [TradeType], [Stratcode]) 
                   values ('{StratName}', '{stockNo}', '{SignalTime}', '{BuyOrSell}', '{Size}', '{Price}','{DealPrice}','{DayTrade}','{TradeType}', '{Stratcode}') END """
